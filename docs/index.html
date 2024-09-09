@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gekko Care Manager</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .done {
+            text-decoration: line-through;
+            color: gray;
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome to the Gekko Care Manager</h1>
+    <p>Add and manage your tasks using the form below.</p>
+    
+    <form id="taskForm">
+        <input type="text" id="taskName" placeholder="Task name" required>
+        <input type="datetime-local" id="taskTime" required>
+        <button type="submit">Add Task</button>
+    </form>
+
+    <div class="task-list">
+        <h2>Tasks</h2>
+        <table id="taskTable">
+            <thead>
+                <tr>
+                    <th>Task</th>
+                    <th>Time</th>
+                    <th>Completed</th>
+                </tr>
+            </thead>
+            <tbody id="taskList">
+                <!-- Tasks will be displayed here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Function to load tasks from localStorage
+        function loadTasks() {
+            const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+            const taskList = document.getElementById('taskList');
+            taskList.innerHTML = ''; // Clear existing tasks
+
+            tasks.forEach(task => {
+                const row = document.createElement('tr');
+                if (task.done) row.classList.add('done');
+                row.innerHTML = `
+                    <td>${task.name}</td>
+                    <td>${new Date(task.time).toLocaleString()}</td>
+                    <td>
+                        <button onclick="completeTask('${task.name}')">
+                            ${task.done ? 'Done' : 'Mark as Done'}
+                        </button>
+                    </td>
+                `;
+                taskList.appendChild(row);
+            });
+        }
+
+        // Load tasks when the page loads
+        document.addEventListener('DOMContentLoaded', loadTasks);
+
+        // Handle form submission to add tasks
+        document.getElementById('taskForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const taskName = document.getElementById('taskName').value;
+            const taskTime = document.getElementById('taskTime').value;
+            
+            const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+            tasks.push({
+                name: taskName,
+                time: taskTime,
+                done: false
+            });
+            localStorage.setItem('tasks', JSON.stringify(tasks)); // Store tasks in localStorage
+            loadTasks(); // Reload tasks after adding
+            document.getElementById('taskForm').reset(); // Clear form
+        });
+
+        // Function to mark a task as complete
+        function completeTask(taskName) {
+            const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+            const updatedTasks = tasks.map(task => {
+                if (task.name === taskName) {
+                    return { ...task, done: true };
+                }
+                return task;
+            });
+            localStorage.setItem('tasks', JSON.stringify(updatedTasks)); // Update tasks in localStorage
+            loadTasks(); // Reload tasks after marking as done
+        }
+    </script>
+</body>
+</html>
