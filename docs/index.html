@@ -27,6 +27,9 @@
             text-decoration: line-through;
             color: gray;
         }
+        .controls {
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -46,13 +49,17 @@
                 <tr>
                     <th>Task</th>
                     <th>Time</th>
-                    <th>Completed</th>
+                    <th>Status</th>
                 </tr>
             </thead>
             <tbody id="taskList">
                 <!-- Tasks will be displayed here -->
             </tbody>
         </table>
+    </div>
+
+    <div class="controls">
+        <button onclick="clearOldTasks()">Clear Week-old Tasks</button>
     </div>
 
     <script>
@@ -69,8 +76,8 @@
                     <td>${task.name}</td>
                     <td>${new Date(task.time).toLocaleString()}</td>
                     <td>
-                        <button onclick="completeTask('${task.name}')">
-                            ${task.done ? 'Done' : 'Mark as Done'}
+                        <button onclick="toggleTask('${task.name}')">
+                            ${task.done ? 'Undo' : 'Mark as Done'}
                         </button>
                     </td>
                 `;
@@ -98,17 +105,31 @@
             document.getElementById('taskForm').reset(); // Clear form
         });
 
-        // Function to mark a task as complete
-        function completeTask(taskName) {
+        // Function to mark a task as complete or undo the action
+        function toggleTask(taskName) {
             const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
             const updatedTasks = tasks.map(task => {
                 if (task.name === taskName) {
-                    return { ...task, done: true };
+                    return { ...task, done: !task.done }; // Toggle between done and not done
                 }
                 return task;
             });
             localStorage.setItem('tasks', JSON.stringify(updatedTasks)); // Update tasks in localStorage
-            loadTasks(); // Reload tasks after marking as done
+            loadTasks(); // Reload tasks after toggling status
+        }
+
+        // Function to clear tasks older than a week
+        function clearOldTasks() {
+            const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+            const oneWeekAgo = new Date();
+            oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+            const filteredTasks = tasks.filter(task => {
+                return new Date(task.time) > oneWeekAgo;
+            });
+
+            localStorage.setItem('tasks', JSON.stringify(filteredTasks)); // Update tasks in localStorage
+            loadTasks(); // Reload tasks after clearing old ones
         }
     </script>
 </body>
